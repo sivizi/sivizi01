@@ -2,18 +2,243 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Sivizi — Build with AI</title>
+
+    <meta
+        name="description"
+        content="Sivizi helps you turn ideas into websites and digital tools."
+    >
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <h1>Welcome to Sivizi</h1>
+<header class="navbar">
 
-    <p>Turn your idea into a website.</p>
+    <div class="logo">
+        <span>S</span> Sivizi
+    </div>
+
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#templates">Templates</a>
+        <a href="#about">About</a>
+    </nav>
+
+    <div class="nav-buttons">
+        <button class="login-btn">Log in</button>
+        <button class="signup-btn">Get Started</button>
+    </div>
+
+</header>
+
+
+<main>
+
+<section class="hero">
+
+    <div class="badge">
+        ✦ AI-powered website creation
+    </div>
+
+    <h1>
+        Turn your idea<br>
+        <span>into a website.</span>
+    </h1>
+
+    <p>
+        Describe what you want to build.
+        Sivizi helps turn your idea into a professional website.
+    </p>
+
+    <div class="builder-box">
+
+        <textarea
+            id="idea"
+            placeholder="Describe the website you want to create..."
+        ></textarea>
+
+        <div class="builder-bottom">
+
+            <span>
+                ✦ AI Website Builder
+            </span>
+
+            <button onclick="startBuilding()">
+                Build with Sivizi →
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="examples">
+
+        <span>Try:</span>
+
+        <button onclick="useExample('Create a modern towing company website')">
+            🚙 Towing company
+        </button>
+
+        <button onclick="useExample('Create an online clothing store')">
+            👕 Online store
+        </button>
+
+        <button onclick="useExample('Create a restaurant website')">
+            🍽 Restaurant
+        </button>
+
+    </div>
+
+</section>
+
+
+<section id="features" class="features">
+
+    <div class="section-heading">
+
+        <span>POWERFUL TOOLS</span>
+
+        <h2>
+            Everything you need<br>
+            to build online.
+        </h2>
+
+    </div>
+
+
+    <div class="feature-grid">
+
+        <div class="feature-card">
+
+            <div class="icon">✦</div>
+
+            <h3>AI Website Builder</h3>
+
+            <p>
+                Describe your idea and create
+                a website from your description.
+            </p>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="icon">◈</div>
+
+            <h3>Live Preview</h3>
+
+            <p>
+                See your website while you
+                build and customize it.
+            </p>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="icon">◇</div>
+
+            <h3>Templates</h3>
+
+            <p>
+                Start quickly with professionally
+                designed website templates.
+            </p>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="icon">↗</div>
+
+            <h3>Publish</h3>
+
+            <p>
+                Publish your finished website
+                to the internet.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section id="templates" class="templates">
+
+    <span>START QUICKLY</span>
+
+    <h2>Choose a starting point.</h2>
+
+    <div class="template-grid">
+
+        <div class="template">
+            <div class="template-image towing"></div>
+            <h3>Business</h3>
+            <p>Professional business website</p>
+        </div>
+
+        <div class="template">
+            <div class="template-image store"></div>
+            <h3>Online Store</h3>
+            <p>Modern ecommerce website</p>
+        </div>
+
+        <div class="template">
+            <div class="template-image restaurant"></div>
+            <h3>Restaurant</h3>
+            <p>Restaurant and food website</p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<section id="about" class="cta">
+
+    <h2>
+        Your idea is the<br>
+        starting point.
+    </h2>
+
+    <p>
+        Start building with Sivizi.
+    </p>
+
+    <button onclick="startBuilding()">
+        Start Building →
+    </button>
+
+</section>
+
+</main>
+
+
+<footer>
+
+    <div class="logo">
+        <span>S</span> Sivizi
+    </div>
+
+    <p>
+        © 2026 Sivizi. All rights reserved.
+    </p>
+
+</footer>
+
+
+<script src="script.js"></script>
 
 </body>
 </html>
