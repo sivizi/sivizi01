@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sivizi — Turn a brief into a finished video</title>
+<meta name="description" content="Sivizi turns an idea into a finished long-form video: script, voice, footage, and edit — in one workspace.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12201C;
+    --bg-raised: #182A24;
+    --amber: #E8A33D;
+    --amber-dim: #B77E2C;
+    --parchment: #F3EFE4;
+    --parchment-dim: #C9C4B6;
+    --moss: #3D5A50;
+    --moss-line: #2A4038;
+    --radius-s: 4px;
+    --radius-m: 10px;
+    --maxw: 1120px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--parchment);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    margin:0;
+    color:var(--parchment);
+  }
+  a{color:inherit;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+  img,svg{display:block; max-width:100%;}
+
+  /* focus visibility */
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:3px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(18,32,28,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--moss-line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 0;
+  }
+  .logo{
+    font-family:'Fraunces', serif;
+    font-size:1.35rem;
+    letter-spacing:0.01em;
+  }
+  .logo span{color:var(--amber);}
+  .nav-links{display:flex; gap:32px; font-size:0.95rem;}
+  .nav-links a{text-decoration:none; color:var(--parchment-dim); transition:color .15s;}
+  .nav-links a:hover{color:var(--parchment);}
+  .nav-cta{
+    display:inline-block;
+    padding:9px 18px;
+    border-radius:var(--radius-s);
+    background:var(--amber);
+    color:#1A1204;
+    font-weight:600;
+    text-decoration:none;
+    font-size:0.92rem;
+  }
+  .nav-mobile-toggle{display:none;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:88px 0 96px;
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:56px;
+    align-items:center;
+  }
+  .eyebrow-line{
+    display:flex; align-items:center; gap:10px;
+    color:var(--amber);
+    font-size:0.85rem;
+    margin-bottom:22px;
+  }
+  .eyebrow-line .dot{width:6px; height:6px; border-radius:50%; background:var(--amber);}
+  .hero h1{
+    font-size:clamp(2.4rem, 4.6vw, 3.6rem);
+    line-height:1.08;
+    max-width:15ch;
+  }
+  .hero p.lede{
+    margin-top:22px;
+    font-size:1.15rem;
+    color:var(--parchment-dim);
+    max-width:46ch;
+  }
+  .hero-actions{
+    margin-top:36px;
+    display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+  }
+  .btn-primary{
+    background:var(--amber);
+    color:#1A1204;
+    border:none;
+    padding:14px 26px;
+    border-radius:var(--radius-s);
+    font-weight:600;
+    font-size:1rem;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+  }
+  .btn-ghost{
+    color:var(--parchment);
+    text-decoration:none;
+    font-size:0.95rem;
+    border-bottom:1px solid var(--moss-line);
+    padding-bottom:2px;
+  }
+
+  /* Timeline scrubber graphic */
+  .scrubber{
+    background:var(--bg-raised);
+    border:1px solid var(--moss-line);
+    border-radius:var(--radius-m);
+    padding:22px;
+  }
+  .scrubber-top{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:0.78rem; color:var(--parchment-dim);
+    margin-bottom:16px;
+  }
+  .scrubber-track{
+    position:relative;
+    height:64px;
+    background:#0D1712;
+    border-radius:var(--radius-s);
+    overflow:hidden;
+    display:flex;
+  }
+  .clip{
+    height:100%;
+    border-right:1px solid rgba(0,0,0,0.35);
+    position:relative;
+  }
+  .clip::after{
+    content:'';
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, rgba(243,239,228,0.06) 0 2px, transparent 2px 10px);
+  }
+  .clip.c1{width:22%; background:#2A4038;}
+  .clip.c2{width:30%; background:#3D5A50;}
+  .clip.c3{width:18%; background:#B77E2C;}
+  .clip.c4{width:30%; background:#2A4038;}
+  .playhead{
+    position:absolute; top:-6px; bottom:-6px; left:52%;
+    width:2px; background:var(--amber);
+  }
+  .playhead::before{
+    content:'';
+    position:absolute; top:-4px; left:-4px;
+    width:10px; height:10px; background:var(--amber);
+    border-radius:50%;
+  }
+  .scrubber-rows{
+    margin-top:14px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .scrubber-row{
+    height:10px; border-radius:2px; background:var(--moss-line);
+    opacity:0.7;
+  }
+  .scrubber-row.r1{width:70%;}
+  .scrubber-row.r2{width:45%;}
+  .scrubber-row.r3{width:58%;}
+
+  @media (max-width:880px){
+    .hero{grid-template-columns:1fr; padding-top:52px;}
+    .nav-links{display:none;}
+  }
+
+  /* ---------- Section shell ---------- */
+  section{padding:96px 0;}
+  .section-head{max-width:56ch; margin-bottom:56px;}
+  .section-head .kicker{
+    color:var(--amber); font-size:0.85rem; margin-bottom:12px; display:block;
+  }
+  .section-head h2{font-size:clamp(1.8rem, 3vw, 2.4rem); line-height:1.15;}
+  .section-head p{color:var(--parchment-dim); margin-top:16px; font-size:1.05rem;}
+
+  /* ---------- How it works (sequence -> numbered, legitimate) ---------- */
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:0;
+    border-top:1px solid var(--moss-line);
+  }
+  .step{
+    padding:28px 24px 28px 0;
+    border-right:1px solid var(--moss-line);
+    position:relative;
+  }
+  .step:last-child{border-right:none;}
+  .step .num{
+    font-family:'Fraunces', serif;
+    font-size:1.6rem;
+    color:var(--amber-dim);
+    display:block;
+    margin-bottom:14px;
+  }
+  .step h3{font-size:1.08rem; margin-bottom:10px; font-weight:600;}
+  .step p{color:var(--parchment-dim); font-size:0.95rem; margin:0;}
+  @media (max-width:880px){
+    .steps{grid-template-columns:1fr; border-top:none;}
+    .step{border-right:none; border-top:1px solid var(--moss-line); padding:24px 0;}
+  }
+
+  /* ---------- Features (varied hierarchy, not identical cards) ---------- */
+  .features{
+    display:grid;
+    grid-template-columns:1.4fr 1fr;
+    gap:20px;
+  }
+  .feature-lead{
+    background:var(--bg-raised);
+    border:1px solid var(--moss-line);
+    border-radius:var(--radius-m);
+    padding:40px;
+    display:flex; flex-direction:column; justify-content:flex-end;
+    min-height:280px;
+  }
+  .feature-lead h3{font-size:1.5rem; margin-bottom:12px;}
+  .feature-lead p{color:var(--parchment-dim); max-width:42ch;}
+  .feature-stack{display:flex; flex-direction:column; gap:20px;}
+  .feature-small{
+    background:transparent;
+    border:1px solid var(--moss-line);
+    border-radius:var(--radius-m);
+    padding:24px;
+    flex:1;
+  }
+  .feature-small h3{font-size:1.05rem; margin-bottom:8px; font-weight:600;}
+  .feature-small p{color:var(--parchment-dim); font-size:0.93rem; margin:0;}
+  @media (max-width:880px){
+    .features{grid-template-columns:1fr;}
+  }
+
+  /* ---------- CTA band ---------- */
+  .cta-band{
+    background:var(--bg-raised);
+    border-top:1px solid var(--moss-line);
+    border-bottom:1px solid var(--moss-line);
+    padding:80px 0;
+    text-align:left;
+  }
+  .cta-band .wrap{
+    display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;
+  }
+  .cta-band h2{font-size:clamp(1.6rem,3vw,2.1rem); max-width:20ch;}
+  .cta-band p{color:var(--parchment-dim); margin-top:12px; max-width:42ch;}
+
+  /* ---------- Footer ---------- */
+  footer{padding:56px 0 40px;}
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:32px;
+    padding-bottom:32px;
+    border-bottom:1px solid var(--moss-line);
+  }
+  .footer-links{display:flex; gap:48px; flex-wrap:wrap;}
+  .footer-col h4{
+    font-size:0.85rem; color:var(--parchment-dim);
+    margin:0 0 14px; font-weight:500;
+  }
+  .footer-col a{
+    display:block; font-size:0.92rem; color:var(--parchment);
+    text-decoration:none; margin-bottom:10px; opacity:0.85;
+  }
+  .footer-col a:hover{opacity:1;}
+  .footer-bottom{
+    padding-top:24px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    font-size:0.85rem; color:var(--parchment-dim);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">sivizi<span>.</span></div>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <a class="nav-cta" href="studio.html">Start free</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <div>
+      <div class="eyebrow-line"><span class="dot"></span> Now in early access</div>
+      <h1>Turn a brief into a finished video.</h1>
+      <p class="lede">Sivizi researches, scripts, voices, and edits long-form video from a single idea — so you approve the plan once, not every frame.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="studio.html">Start free</a>
+        <a class="btn-ghost" href="#how">See how it works</a>
+      </div>
+    </div>
+    <div class="scrubber" aria-hidden="true">
+      <div class="scrubber-top">
+        <span>brief.mp4</span>
+        <span>04:12</span>
+      </div>
+      <div class="scrubber-track">
+        <div class="clip c1"></div>
+        <div class="clip c2"></div>
+        <div class="clip c3"></div>
+        <div class="clip c4"></div>
+        <div class="playhead"></div>
+      </div>
+      <div class="scrubber-rows">
+        <div class="scrubber-row r1"></div>
+        <div class="scrubber-row r2"></div>
+        <div class="scrubber-row r3"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="wrap">
+    <div class="section-head">
+      <span class="kicker">How it works</span>
+      <h2>One brief, four stages, one plan you approve upfront.</h2>
+      <p>You see the script, footage choices, and voice before anything renders — adjust the brief, not the output.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="num">01</span>
+        <h3>Research &amp; script</h3>
+        <p>Give Sivizi a topic. It drafts a structured narration script you can edit line by line.</p>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h3>Voice</h3>
+        <p>Pick a voice from the library, or upload your own narration to pair with the script.</p>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h3>Footage</h3>
+        <p>Sivizi sources or generates footage that matches each line of the script and its pacing.</p>
+      </div>
+      <div class="step">
+        <span class="num">04</span>
+        <h3>Edit</h3>
+        <p>A full timeline lands in your workspace — trim, reorder, and fine-tune before export.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="wrap">
+    <div class="section-head">
+      <span class="kicker">Built for creators</span>
+      <h2>Every part of production, in one workspace.</h2>
+    </div>
+    <div class="features">
+      <div class="feature-lead">
+        <h3>Approve before it renders</h3>
+        <p>Review the script, footage plan, and voice choice before Sivizi generates a single frame — so nothing surprises you at export.</p>
+      </div>
+      <div class="feature-stack">
+        <div class="feature-small">
+          <h3>Real timeline, not just prompts</h3>
+          <p>Drop into a real editor when you need frame-level control, without starting the project over.</p>
+        </div>
+        <div class="feature-small">
+          <h3>Match your channel's style</h3>
+          <p>Point Sivizi at past videos and it studies the pacing and rhythm that make them yours.</p>
+        </div>
+        <div class="feature-small">
+          <h3>Licensed sources only</h3>
+          <p>Footage comes from licensed and public-domain libraries, so every video is safe to publish.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="wrap">
+      <div>
+        <h2>Bring your first brief.</h2>
+        <p>No card required to start — see the full plan before you spend a single credit.</p>
+      </div>
+      <a class="btn-primary" href="studio.html">Start free</a>
+    </div>
+  </section>
+
+  <section id="pricing" class="wrap">
+    <div class="section-head">
+      <span class="kicker">Pricing</span>
+      <h2>Start free. Add credits only when you need them.</h2>
+      <p>This is a template section — wire it up to your own plan details before launch.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="footer-top">
+    <div class="logo">sivizi<span>.</span></div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom wrap" style="padding-left:0; padding-right:0;">
+    <span>© 2026 Sivizi. All rights reserved.</span>
+    <span>Made with GitHub Pages</span>
+  </div>
+</footer>
+
+</body>
+</html>
