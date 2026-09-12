@@ -1,26 +1,44 @@
-function useExample(text) {
+const generateButton =
+    document.getElementById("generateButton");
 
-    document.getElementById("idea").value = text;
+const videoPrompt =
+    document.getElementById("videoPrompt");
 
-}
+
+generateButton.addEventListener("click", function () {
+
+    const prompt =
+        videoPrompt.value.trim();
 
 
-function startBuilding() {
+    if (prompt === "") {
 
-    const idea = document.getElementById("idea").value.trim();
-
-    if (!idea) {
-
-        alert("Please describe the website you want to build.");
+        alert(
+            "Please describe the video you want to create."
+        );
 
         return;
-
     }
 
+
     alert(
-        "Sivizi received your idea:\n\n" +
-        idea +
-        "\n\nOur AI builder will be connected in the next stage."
+        "SiviZi received your idea!\n\n" +
+        prompt +
+        "\n\nAI video generation will be connected next."
     );
 
-}
+});
+
+
+const startButton =
+    document.getElementById("startButton");
+
+
+startButton.addEventListener("click", function () {
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+});
