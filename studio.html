@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sivizi Studio — generate a video</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12201C; --bg-raised:#182A24; --bg-input:#0D1712;
+    --amber:#E8A33D; --amber-dim:#B77E2C;
+    --parchment:#F3EFE4; --parchment-dim:#C9C4B6;
+    --moss-line:#2A4038; --danger:#E2695B; --ok:#7FB88A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--parchment); font-family:'IBM Plex Sans',sans-serif; line-height:1.5;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:500; margin:0 0 10px;}
+  a{color:var(--amber);}
+  .wrap{max-width:920px; margin:0 auto; padding:32px 24px 80px;}
+  header{border-bottom:1px solid var(--moss-line); padding:18px 24px;}
+  .logo{max-width:920px; margin:0 auto; font-family:'Fraunces',serif; font-size:1.3rem;}
+  .logo span{color:var(--amber);}
+  .logo a{color:var(--parchment); text-decoration:none;}
+
+  .panel{background:var(--bg-raised); border:1px solid var(--moss-line); border-radius:10px; padding:24px; margin-bottom:24px;}
+  label{display:block; font-size:0.85rem; color:var(--parchment-dim); margin-bottom:6px;}
+  input[type=text], input[type=password], textarea, select{
+    width:100%; background:var(--bg-input); border:1px solid var(--moss-line); color:var(--parchment);
+    padding:10px 12px; border-radius:6px; font-size:0.95rem; font-family:inherit;
+  }
+  textarea{resize:vertical; min-height:64px;}
+  button{
+    background:var(--amber); color:#1A1204; border:none; padding:10px 18px;
+    border-radius:6px; font-weight:600; font-size:0.9rem; cursor:pointer;
+  }
+  button.secondary{background:transparent; color:var(--parchment); border:1px solid var(--moss-line); font-weight:500;}
+  button:disabled{opacity:0.5; cursor:not-allowed;}
+  button.small{padding:7px 12px; font-size:0.83rem;}
+  .row{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;}
+  .row > div{flex:1; min-width:180px;}
+
+  .scene{border:1px solid var(--moss-line); border-radius:10px; padding:18px; margin-bottom:16px; display:grid; grid-template-columns:200px 1fr; gap:18px;}
+  .scene img{width:100%; border-radius:6px; display:block; background:#0D1712; aspect-ratio:16/9; object-fit:cover;}
+  .scene-num{color:var(--amber); font-size:0.8rem; margin-bottom:8px;}
+  .scene-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .status{font-size:0.82rem; color:var(--parchment-dim); margin-top:6px;}
+  .status.ok{color:var(--ok);}
+  .status.err{color:var(--danger);}
+  @media (max-width:640px){ .scene{grid-template-columns:1fr;} }
+
+  #log{background:var(--bg-input); border:1px solid var(--moss-line); border-radius:8px; padding:14px; font-family:monospace; font-size:0.78rem; color:var(--parchment-dim); max-height:200px; overflow-y:auto; white-space:pre-wrap;}
+  #progressBar{height:6px; background:var(--moss-line); border-radius:3px; overflow:hidden; margin:10px 0;}
+  #progressFill{height:100%; width:0%; background:var(--amber); transition:width .2s;}
+  video{width:100%; border-radius:8px; margin-top:12px;}
+  .hint{font-size:0.82rem; color:var(--parchment-dim); margin-top:6px;}
+  details summary{cursor:pointer; color:var(--amber); font-size:0.9rem; margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<header><div class="logo"><a href="index.html">sivizi<span>.</span></a></div></header>
+
+<div class="wrap">
+  <h1>Generate a video</h1>
+  <p class="hint">Everything below runs in your browser. Nothing is uploaded to a server we control.</p>
+
+  <div class="panel">
+    <h3>1. Voice settings</h3>
+    <details>
+      <summary>Optional: use real AI narration (free ElevenLabs account)</summary>
+      <p class="hint">Sign up free at <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a> (no card needed), copy your API key from your profile settings, and paste it below. Free accounts get about 10,000 characters/month. This key is used only in your browser and is never saved anywhere by this site.</p>
+      <div class="row">
+        <div>
+          <label for="elKey">Your ElevenLabs API key (optional)</label>
+          <input type="password" id="elKey" placeholder="sk_...">
+        </div>
+        <div>
+          <label for="elVoice">Voice</label>
+          <select id="elVoice">
+            <option value="21m00Tcm4TlvDq8ikWAM">Rachel (female, calm)</option>
+            <option value="pNInz6obpgDQGcFmaJgB">Adam (male, deep)</option>
+            <option value="EXAVITQu4vr4xnSDxMaL">Bella (female, warm)</option>
+            <option value="TxGEqnHWrfWFTfGW9XjX">Josh (male, young)</option>
+            <option value="VR6AewLTigWG4xSOukaG">Arnold (male, bold)</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">No key? Each scene will just play a live browser-voice preview and the exported video will use on-screen captions with no baked-in narration.</p>
+    </details>
+    <details open style="margin-top:16px;">
+      <summary>Required: free Pollinations key for script writing</summary>
+      <p class="hint">Pollinations now requires a free account for text generation (image generation stays keyless). Sign up at <a href="https://enter.pollinations.ai" target="_blank">enter.pollinations.ai</a> (no card), copy your publishable key (starts with <code>pk_</code>), and paste it below.</p>
+      <label for="polliKey">Your Pollinations key</label>
+      <input type="password" id="polliKey" placeholder="pk_...">
+    </details>
+  </div>
+
+  <div class="panel">
+    <h3>2. Describe your video</h3>
+    <label for="topic">Topic or brief</label>
+    <textarea id="topic" placeholder="e.g. The history of the Roman aqueducts, for a curious general audience"></textarea>
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <label for="sceneCount">Number of scenes</label>
+        <select id="sceneCount">
+          <option value="3">3 (short)</option>
+          <option value="5" selected>5 (medium)</option>
+          <option value="8">8 (long)</option>
+        </select>
+      </div>
+      <div style="flex:0;">
+        <button id="btnScript">Generate script</button>
+      </div>
+    </div>
+    <p id="scriptStatus" class="status"></p>
+  </div>
+
+  <div id="scenesPanel" class="panel" style="display:none;">
+    <h3>3. Review each scene</h3>
+    <div id="scenesList"></div>
+  </div>
+
+  <div id="exportPanel" class="panel" style="display:none;">
+    <h3>4. Build the video</h3>
+    <button id="btnExport">Generate video</button>
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <div id="log"></div>
+    <video id="preview" controls style="display:none;"></video>
+    <a id="downloadLink" style="display:none;" download="sivizi-video.mp4"><button class="secondary" style="margin-top:10px;">Download .mp4</button></a>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script>
+const FONT_URL = 'https://cdn.jsdelivr.net/gh/google/fonts/apache/roboto/Roboto-Regular.ttf';
+const state = { scenes: [] };
+
+function logLine(msg){
+  const el = document.getElementById('log');
+  el.textContent += msg + "\n";
+  el.scrollTop = el.scrollHeight;
+}
+function setProgress(pct){ document.getElementById('progressFill').style.width = pct + '%'; }
+
+/* ---------- 1. Script generation (free, keyless Pollinations text API) ---------- */
+document.getElementById('btnScript').addEventListener('click', generateScript);
+
+async function generateScript(){
+  const topic = document.getElementById('topic').value.trim();
+  const count = document.getElementById('sceneCount').value;
+  const statusEl = document.getElementById('scriptStatus');
+  if(!topic){
+    statusEl.textContent = 'Enter a topic first.';
+    statusEl.className = 'status err';
+    return;
+  }
+  statusEl.textContent = 'Writing script...';
+  statusEl.className = 'status';
+
+  const instruction = `Write a short narrated video script about: "${topic}". `
+    + `Split it into exactly ${count} scenes. Respond with ONLY a raw JSON array, no markdown, `
+    + `no explanation, in this exact shape: `
+    + `[{"narration":"one or two spoken sentences","image_prompt":"a short visual description for an AI image generator"}]`;
+
+  try {
+    const raw = await fetchScriptWithFallback(instruction);
+    let scenes = tryParseScenes(raw);
+    if(!scenes || scenes.length === 0){
+      scenes = fallbackSplit(raw, parseInt(count));
+    }
+    state.scenes = scenes.map(s => ({
+      narration: s.narration,
+      imagePrompt: s.image_prompt || s.narration,
+      imageUrl: null,
+      audioBlob: null,
+      audioDuration: null,
+      seed: Math.floor(Math.random() * 100000)
+    }));
+    statusEl.textContent = 'Script ready (' + state.scenes.length + ' scenes). Loading images...';
+    statusEl.className = 'status ok';
+    renderScenes();
+    await loadAllImages();
+    document.getElementById('exportPanel').style.display = 'block';
+  } catch(err){
+    statusEl.textContent = 'Could not generate a script (' + err.message + '). Try again, or shorten the topic.';
+    statusEl.className = 'status err';
+  }
+}
+
+async function fetchScriptWithFallback(instruction){
+  const key = document.getElementById('polliKey').value.trim();
+  if(!key){
+    throw new Error('Paste your free Pollinations key above first (get one at enter.pollinations.ai)');
+  }
+  const models = ['openai-fast', 'mistral', ''];
+  let lastError;
+  for(const model of models){
+    try {
+      const params = new URLSearchParams({ key });
+      if(model) params.set('model', model);
+      const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(instruction) + '?' + params.toString());
+      if(!res.ok){
+        lastError = new Error('Script API returned ' + res.status + (model ? (' for model "' + model + '"') : '') + '. Check that your Pollinations key is correct.');
+        continue;
+      }
+      return await res.text();
+    } catch(e){
+      lastError = e;
+    }
+  }
+  throw lastError;
+}
+
+function tryParseScenes(raw){
+  try {
+    const cleaned = raw.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+    const parsed = JSON.parse(cleaned);
+    if(Array.isArray(parsed)) return parsed;
+  } catch(e){ /* fall through to fallback */ }
+  return null;
+}
+
+function fallbackSplit(raw, count){
+  const sentences = raw.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).filter(Boolean);
+  const perScene = Math.max(1, Math.ceil(sentences.length / count));
+  const scenes = [];
+  for(let i=0; i<sentences.length; i+=perScene){
+    const chunk = sentences.slice(i, i+perScene).join(' ');
+    scenes.push({ narration: chunk, image_prompt: chunk });
+  }
+  return scenes.slice(0, count);
+}
+
+/* ---------- 2. Scene rendering ---------- */
+function renderScenes(){
+  document.getElementById('scenesPanel').style.display = 'block';
+  const list = document.getElementById('scenesList');
+  list.innerHTML = '';
+  state.scenes.forEach((scene, i) => {
+    const div = document.createElement('div');
+    div.className = 'scene';
+    div.innerHTML = `
+      <div>
+        <img id="img-${i}" alt="Scene ${i+1} visual">
+        <button class="secondary small" style="margin-top:8px;width:100%;" onclick="regenerateImage(${i})">Regenerate image</button>
+      </div>
+      <div>
+        <div class="scene-num">Scene ${i+1}</div>
+        <label>Narration</label>
+        <textarea id="narr-${i}" oninput="state.scenes[${i}].narration=this.value">${scene.narration}</textarea>
+        <div class="scene-actions">
+          <button class="secondary small" onclick="previewVoice(${i})">Preview voice</button>
+          <button class="small" onclick="generateAIVoice(${i})">Generate AI voice</button>
+        </div>
+        <p id="voiceStatus-${i}" class="status"></p>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+async function loadAllImages(){
+  for(let i=0; i<state.scenes.length; i++){
+    await loadImage(i);
+  }
+}
+async function loadImage(i){
+  const scene = state.scenes[i];
+  const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(scene.imagePrompt)
+    + '?width=1280&height=720&seed=' + scene.seed + '&nologo=true';
+  scene.imageUrl = url;
+  const imgEl = document.getElementById('img-' + i);
+  if(imgEl) imgEl.src = url;
+}
+function regenerateImage(i){
+  state.scenes[i].seed = Math.floor(Math.random() * 100000);
+  loadImage(i);
+}
+
+/* ---------- 3. Voice: browser preview + real AI voice ---------- */
+function previewVoice(i){
+  const text = state.scenes[i].narration;
+  const utter = new SpeechSynthesisUtterance(text);
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+
+async function generateAIVoice(i){
+  const key = document.getElementById('elKey').value.trim();
+  const voiceId = document.getElementById('elVoice').value;
+  const statusEl = document.getElementById('voiceStatus-' + i);
+  if(!key){
+    statusEl.textContent = 'Paste your free ElevenLabs API key above first.';
+    statusEl.className = 'status err';
+    return;
+  }
+  statusEl.textContent = 'Generating AI voice...';
+  statusEl.className = 'status';
+  try {
+    const res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voiceId, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': key,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text: state.scenes[i].narration,
+        model_id: 'eleven_multilingual_v2'
+      })
+    });
+    if(!res.ok){
+      const errText = await res.text();
+      throw new Error('ElevenLabs returned ' + res.status + ': ' + errText.slice(0,120));
+    }
+    const blob = await res.blob();
+    state.scenes[i].audioBlob = blob;
+    state.scenes[i].audioDuration = await getAudioDuration(blob);
+    statusEl.textContent = 'AI voice ready (' + state.scenes[i].audioDuration.toFixed(1) + 's).';
+    statusEl.className = 'status ok';
+  } catch(err){
+    statusEl.textContent = 'Could not generate AI voice: ' + err.message;
+    statusEl.className = 'status err';
+  }
+}
+
+function getAudioDuration(blob){
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.addEventListener('loadedmetadata', () => resolve(audio.duration));
+    audio.addEventListener('error', () => resolve(4));
+  });
+}
+
+/* ---------- 4. Assemble the final video with ffmpeg.wasm ---------- */
+document.getElementById('btnExport').addEventListener('click', exportVideo);
+
+async function exportVideo(){
+  const btn = document.getElementById('btnExport');
+  btn.disabled = true;
+  setProgress(0);
+  document.getElementById('log').textContent = '';
+
+  try {
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({
+      log: false,
+      corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+    });
+    logLine('Loading video engine (ffmpeg.wasm)...');
+    await ffmpeg.load();
+    setProgress(10);
+
+    logLine('Fetching caption font...');
+    ffmpeg.FS('writeFile', 'font.ttf', await fetchFile(FONT_URL));
+
+    const sceneFiles = [];
+    for(let i=0; i<state.scenes.length; i++){
+      const scene = state.scenes[i];
+      logLine('Scene ' + (i+1) + ': fetching image...');
+      ffmpeg.FS('writeFile', `img${i}.png`, await fetchFile(scene.imageUrl));
+      ffmpeg.FS('writeFile', `cap${i}.txt`, new TextEncoder().encode(wrapCaption(scene.narration)));
+
+      let audioFile, duration;
+      if(scene.audioBlob){
+        audioFile = `aud${i}.mp3`;
+        ffmpeg.FS('writeFile', audioFile, await fetchFile(scene.audioBlob));
+        duration = scene.audioDuration;
+      } else {
+        duration = estimateDuration(scene.narration);
+        audioFile = `aud${i}.mp3`;
+        logLine('Scene ' + (i+1) + ': no AI voice, generating ' + duration.toFixed(1) + 's of silence...');
+        await ffmpeg.run('-f','lavfi','-i','anullsrc=r=44100:cl=stereo','-t',String(duration),'-q:a','9','-acodec','libmp3lame',audioFile);
+      }
+
+      logLine('Scene ' + (i+1) + ': rendering clip...');
+      const outFile = `scene${i}.mp4`;
+      await ffmpeg.run(
+        '-loop','1','-i',`img${i}.png`,
+        '-i',audioFile,
+        '-vf', `scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,drawtext=fontfile=font.ttf:textfile=cap${i}.txt:fontcolor=white:fontsize=32:box=1:boxcolor=black@0.5:boxborderw=14:x=(w-text_w)/2:y=h-th-50`,
+        '-c:v','libx264','-t',String(duration),'-pix_fmt','yuv420p',
+        '-c:a','aac','-b:a','192k','-shortest',
+        outFile
+      );
+      sceneFiles.push(outFile);
+      setProgress(10 + Math.round(((i+1)/state.scenes.length) * 75));
+    }
+
+    logLine('Joining all scenes...');
+    const listText = sceneFiles.map(f => `file '${f}'`).join('\n');
+    ffmpeg.FS('writeFile', 'list.txt', new TextEncoder().encode(listText));
+    await ffmpeg.run('-f','concat','-safe','0','-i','list.txt','-c','copy','output.mp4');
+
+    const data = ffmpeg.FS('readFile', 'output.mp4');
+    const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+    const videoUrl = URL.createObjectURL(videoBlob);
+
+    const previewEl = document.getElementById('preview');
+    previewEl.src = videoUrl;
+    previewEl.style.display = 'block';
+    const link = document.getElementById('downloadLink');
+    link.href = videoUrl;
+    link.style.display = 'inline-block';
+
+    setProgress(100);
+    logLine('Done! Your video is ready below.');
+  } catch(err){
+    logLine('Error: ' + err.message);
+    logLine('This step needs the site to actually be live (not opened as a local file) for the video engine to load correctly.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function estimateDuration(text){
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(3, words / 2.3);
+}
+function wrapCaption(text){
+  const words = text.split(' ');
+  let lines = [], line = '';
+  words.forEach(w => {
+    if((line + ' ' + w).trim().length > 42){ lines.push(line.trim()); line = w; }
+    else { line += ' ' + w; }
+  });
+  if(line.trim()) lines.push(line.trim());
+  return lines.join('\n');
+}
+</script>
+</body>
+</html>
